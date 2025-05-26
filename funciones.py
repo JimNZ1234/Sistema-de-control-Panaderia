@@ -74,6 +74,14 @@ class ManejoUsuarios():
             reporte_general = (df[['Nombre','Eficiencia_final','Estado']])
             return reporte_general
 
+    def reporte_individual(self):
+        archivo_existe = os.path.isfile('operarios.csv')
+        if not archivo_existe:
+            messagebox.showwarning("Error", "No existen datos")
+        else:
+            operario_buscado = simpledialog.askstring("Nombre a buscar","Ingrese el nombre del operario")            
+            return operario_buscado
+        
 class DataAnalyzer():
     def __init__(self, df):
         self.df = df
@@ -105,4 +113,35 @@ class CantidadesAnalyzer(DataAnalyzer):
         estado_counts = self.df['Estado'].value_counts()
         plt.pie(estado_counts, labels = estado_counts.index)
         plt.title("Grafico torta")
+        plt.show()
+
+class EstadisticasAnalyzer(DataAnalyzer):
+    def graficas_individuales(self,cantidades,complejidades,eficiencias):
+        plt.close('all')
+        #Referencia plt.close: https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.close.html
+        plt.figure(figsize=(13,5))
+
+        tipos_panes = ["Pan francés", "Pan de queso", "Croissant"]
+        plt.subplot(1, 3, 1)
+        plt.bar(tipos_panes,cantidades,)
+        plt.title("Producción del operario por pan")
+        plt.ylabel("Cantidad producida")
+        plt.yticks(rotation=90)
+        plt.xticks(rotation=20)
+
+        plt.subplot(1, 3, 2)
+        tipos_panes = ["Pan francés", "Pan de queso", "Croissant"]
+        plt.bar(tipos_panes,complejidades, color="Green")
+        plt.title("Nivel de complejidad del operario por pan")
+        plt.ylabel("Nivel de complejidad")
+        plt.yticks(rotation=90)
+        plt.xticks(rotation=20)
+
+        plt.subplot(1, 3, 3)
+        tipos_panes = ["Pan francés", "Pan de queso", "Croissant"]
+        plt.bar(tipos_panes,eficiencias, color="Orange")
+        plt.title("Eficiencia del operario por pan")
+        plt.ylabel("Eficiencia")
+        plt.yticks(rotation=90)
+        plt.xticks(rotation=20)
         plt.show()

@@ -11,6 +11,7 @@ import os
 from funciones import archivo_csv
 from funciones import ManejoUsuarios
 from funciones import CantidadesAnalyzer
+from funciones import EstadisticasAnalyzer
 
 procesos = ManejoUsuarios()
 
@@ -59,6 +60,48 @@ def graficas_generales():
             cant = CantidadesAnalyzer(df)      
             cant.graficas_generales()
 
+def individual_reporte():
+    archivo_existe = os.path.isfile(archivo_csv)
+    if not archivo_existe:
+        mensaje = "No hay registros disponibles"
+        text_area4.delete("1.0",tk.END)
+        text_area4.insert(tk.END, mensaje)
+    else:
+        while True:
+            df = pd.read_csv(archivo_csv)
+            operario_buscado = procesos.reporte_individual()
+            try:
+                indice = df[df['Nombre'] == operario_buscado].index[0]
+                df_individual = pd.DataFrame([df.loc[indice].to_dict()])
+                estats = EstadisticasAnalyzer(df)
+
+                reporte_individual = (df_individual[['Nombre','Eficiencia_final','Estado']])
+                reporte_individual2 = ""
+                reporte_individual2 += f"Total panes producidos: {df_individual[['Cantidad_pan_frances','Cantidad_pan_queso','Cantidad_croissant']].values.sum()}\n"
+                reporte_individual2 += f"Promedio de complejidad: {round((df_individual[['Complejidad_pan_frances','Complejidad_pan_queso','Complejidad_croissant']].values.sum()/3),1)}\n"                
+
+                text_area4.delete("1.0",tk.END)
+                text_area4.insert(tk.END, reporte_individual)                                                                                                                                                                                                                                                                                                                           
+                
+                text_area5.delete("1.0",tk.END)
+                text_area5.insert(tk.END, reporte_individual2)
+
+                cantidades = [sum(df_individual['Cantidad_pan_frances']),sum(df_individual['Cantidad_pan_queso']),sum(df_individual['Cantidad_croissant'])] 
+                complejidades = [sum(df_individual['Complejidad_pan_frances']),sum(df_individual['Complejidad_pan_queso']),sum(df_individual['Complejidad_croissant'])] 
+                eficiencias = [sum(df_individual['Eficiencia_pan_frances']),sum(df_individual['Eficiencia_pan_queso']),sum(df_individual['Eficiencia_croissant'])]
+
+                estats.graficas_individuales(cantidades,complejidades,eficiencias)
+                break
+            except:
+                messagebox.showwarning("Error", "No existe ese usuario")
+                continue
+def cerrar():
+    plt.close('all')
+    #Referencia plt.close: https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.close.html
+    ventana.destroy()
+    #Referencia .destroy(): https://www-geeksforgeeks-org.translate.goog/how-to-close-a-tkinter-window-with-a-button/?_x_tr_sl=en&_x_tr_tl=es&_x_tr_hl=es&_x_tr_pto=tc
+
+
 #Ventana:
 ventana = tk.Tk()
 ventana.title("Visualización de los datos")
@@ -71,6 +114,12 @@ boton_añadir.grid(row=0, column=0)
 boton_general = tk.Button(ventana, text="Actualizar/Graficas", bg="#C0E5F7", command=graficas_generales)
 boton_general.grid(row=0, column=1)
 
+boton_individual = tk.Button(ventana, text="Reporte individual", bg="#C0E5F7",command=individual_reporte)
+boton_individual.grid(row=0, column=2)
+
+boton_salir = tk.Button(ventana, text="Salir", bg="#C33A3A", command=cerrar)
+boton_salir.grid(row=3, column=0)
+
 #Text areas:
 tk.Label(ventana, text="Reporte\ngeneral").grid(row=1, column=0)
 text_area = ScrolledText(ventana, width= 70, height= 15)
@@ -82,6 +131,12 @@ text_area2.grid(row=2, column=1)
 
 text_area3 = ScrolledText(ventana, width= 70, height= 0)
 text_area3.grid(row=3, column=1)
+
+text_area4 = ScrolledText(ventana, width= 50, height= 15)
+text_area4.grid(row=1, column=2)
+
+text_area5 = ScrolledText(ventana, width= 50, height= 15)
+text_area5.grid(row=2, column=2)
 
 content_frame = tk.Frame(ventana)
 content_frame.grid(row=1, column=2)
