@@ -67,4 +67,42 @@ class ManejoUsuarios():
             if not archivo_existe:
                 escritor.writeheader()
             escritor.writerow(operario)
+    
+    def reporte_general(self):
+        if os.path.isfile(archivo_csv):
+            df = pd.read_csv(archivo_csv)
+            reporte_general = (df[['Nombre','Eficiencia_final','Estado']])
+            return reporte_general
 
+class DataAnalyzer():
+    def __init__(self, df):
+        self.df = df
+
+    def correlation_matrix(self):
+        return self.df.corr()
+        
+class CantidadesAnalyzer(DataAnalyzer):
+    def __init__(self, df):
+        super().__init__(df)
+        self.cantidades_cols = ['Cantidad_pan_frances','Cantidad_pan_queso','Cantidad_croissant']
+    
+    def describe_numericas(self):
+        descr_numericas = self.df[self.cantidades_cols].describe()
+        return descr_numericas
+    
+    def graficas_generales(self):
+        plt.close('all')
+        #Referencia plt.close: https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.close.html
+        plt.figure(figsize=(15,6))
+
+        plt.subplot(1, 2, 1)
+        corr_cantidades = self.df[self.cantidades_cols].corr()
+        sns.heatmap(corr_cantidades, annot=True, cmap='coolwarm')
+        plt.title('Matriz de Correlación')
+        plt.xticks(rotation=13)
+       
+        plt.subplot(1, 2, 2)
+        estado_counts = self.df['Estado'].value_counts()
+        plt.pie(estado_counts, labels = estado_counts.index)
+        plt.title("Grafico torta")
+        plt.show()
